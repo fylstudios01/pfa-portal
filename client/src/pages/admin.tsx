@@ -31,20 +31,41 @@ export default function AdminDashboard() {
       setLocation("/login");
       return;
     }
-    const data = JSON.parse(localStorage.getItem('pfa_requests') || '[]');
-    setRequests(data);
+    fetchRequests();
   }, [setLocation]);
+
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch('/api/incorporation-requests');
+      if (response.ok) {
+        const data = await response.json();
+        setRequests(data);
+      }
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("pfa_session");
     setLocation("/login");
   };
 
-  const updateStatus = (id: string, newStatus: string) => {
-    const updated = requests.map(r => r.id === id ? { ...r, status: newStatus } : r);
-    setRequests(updated);
-    localStorage.setItem('pfa_requests', JSON.stringify(updated));
-    setSelectedRequest(null);
+  const updateStatus = async (id: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/incorporation-requests/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        await fetchRequests();
+        setSelectedRequest(null);
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   const filteredRequests = requests.filter(req => {
@@ -139,7 +160,7 @@ export default function AdminDashboard() {
                 ) : (
                   filteredRequests.map((req) => (
                     <TableRow key={req.id}>
-                      <TableCell className="font-mono font-bold text-primary">{req.id}</TableCell>
+                      <TableCell className="font-mono font-bold text-primary">{req.trackingCode}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                            <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
@@ -153,7 +174,7 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>{req.age}</TableCell>
                       <TableCell className="text-xs font-mono">{req.discord}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(req.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{new Date(req.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>{getStatusBadge(req.status)}</TableCell>
                       <TableCell className="text-right">
                         <Dialog>
@@ -169,7 +190,7 @@ export default function AdminDashboard() {
                                    <FileText className="h-6 w-6" />
                                    <div>
                                      <DialogTitle className="text-lg font-serif">LEGAJO PERSONAL: {req.surname}, {req.name}</DialogTitle>
-                                     <p className="text-xs opacity-80 font-mono tracking-widest">EXP: {req.id}</p>
+                                     <p className="text-xs opacity-80 font-mono tracking-widest">EXP: {req.trackingCode}</p>
                                    </div>
                                  </div>
                                  {getStatusBadge(req.status)}

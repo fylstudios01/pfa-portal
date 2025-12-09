@@ -15,7 +15,7 @@ export default function Tracking() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code) return;
     
@@ -23,19 +23,25 @@ export default function Tracking() {
     setError("");
     setResult(null);
 
-    // Simulate complex backend connection
-    setTimeout(() => {
-      const allRequests = JSON.parse(localStorage.getItem('pfa_requests') || '[]');
-      const found = allRequests.find((r: any) => r.id === code.trim().toUpperCase());
+    try {
+      const response = await fetch(`/api/incorporation-requests/${code.trim().toUpperCase()}`);
       
-      setLoading(false);
-      
-      if (found) {
-        setResult(found);
-      } else {
+      if (response.status === 404) {
         setError("No se encontró ninguna solicitud con ese código. Verifique y vuelva a intentar.");
+        return;
       }
-    }, 2000);
+      
+      if (!response.ok) {
+        throw new Error('Error al consultar');
+      }
+      
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      setError("Error al conectar con el servidor. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusInfo = (status: string) => {

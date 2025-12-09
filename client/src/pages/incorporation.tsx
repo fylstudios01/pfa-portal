@@ -103,32 +103,45 @@ export default function Incorporation() {
     window.scrollTo(0, 0);
   };
 
-  const submitFinal = (data: any) => {
+  const submitFinal = async (data: any) => {
     if (!photo) {
       toast({ title: "Falta fotografía", description: "Debe subir una foto 4x4.", variant: "destructive" });
       return;
     }
-    setFormData((prev: any) => ({ ...prev, ...data, photo }));
     
-    // Simulate complex processing
     const code = `INC-${Math.floor(Math.random() * 900000 + 100000)}`;
     setTrackingCode(code);
     
-    setTimeout(() => {
-      const fullData = {
-        ...formData,
-        ...data,
-        photo,
-        id: code,
-        date: new Date().toISOString(),
-        status: "En Revisión" // Default status
-      };
+    const fullData = {
+      ...formData,
+      ...data,
+      photo,
+      trackingCode: code,
+      hasCriminalRecord: formData.hasCriminalRecord === "yes",
+      medicalDeclaration: data.medicalDeclaration,
+      oathDeclaration: data.oathDeclaration,
+    };
+    
+    try {
+      const response = await fetch('/api/incorporation-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fullData)
+      });
       
-      const existing = JSON.parse(localStorage.getItem('pfa_requests') || '[]');
-      localStorage.setItem('pfa_requests', JSON.stringify([fullData, ...existing]));
+      if (!response.ok) {
+        throw new Error('Error al enviar la solicitud');
+      }
+      
       setSuccess(true);
       window.scrollTo(0, 0);
-    }, 2000);
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "No se pudo enviar la solicitud. Intente nuevamente.", 
+        variant: "destructive" 
+      });
+    }
   };
 
   if (success) {

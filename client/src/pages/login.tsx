@@ -16,19 +16,22 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate network delay
-    setTimeout(() => {
-      setIsLoading(false);
-      if (username === "admin" && password === "admin") {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (response.ok) {
         toast({
           title: "Acceso Concedido",
           description: "Bienvenido al sistema de gestión.",
         });
-        // Set fake session
         localStorage.setItem("pfa_session", "true");
         setLocation("/admin");
       } else {
@@ -38,7 +41,15 @@ export default function Login() {
           variant: "destructive",
         });
       }
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Error de Conexión",
+        description: "No se pudo conectar con el servidor.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
