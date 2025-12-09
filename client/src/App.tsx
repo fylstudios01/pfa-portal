@@ -8,12 +8,14 @@ import Home from "@/pages/home";
 import Incorporation from "@/pages/incorporation";
 import Login from "@/pages/login";
 import AdminDashboard from "@/pages/admin";
+import Tracking from "@/pages/tracking";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/incorporacion" component={Incorporation} />
+      <Route path="/seguimiento" component={Tracking} />
       <Route path="/login" component={Login} />
       <Route path="/admin" component={AdminDashboard} />
       <Route component={NotFound} />

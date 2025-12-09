@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Shield, Menu, X, Instagram, Twitter, Facebook } from "lucide-react";
+import { Shield, Menu, X, Instagram, Twitter, Facebook, Search } from "lucide-react";
 import { useState } from "react";
 import logo from "@assets/image_(18)_1765250186765.png";
 
@@ -11,6 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { name: "Inicio", path: "/" },
     { name: "Incorporación", path: "/incorporacion" },
+    { name: "Estado de Trámite", path: "/seguimiento" },
     { name: "Acceso Personal", path: "/login" },
   ];
 
@@ -47,9 +48,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
                 <a className={cn(
-                  "text-sm font-medium tracking-wide transition-colors hover:text-secondary py-2 border-b-2 border-transparent",
+                  "text-sm font-medium tracking-wide transition-colors hover:text-secondary py-2 border-b-2 border-transparent flex items-center gap-2",
                   location === item.path ? "text-secondary border-secondary" : "text-gray-200"
                 )}>
+                  {item.path === "/seguimiento" && <Search className="w-3 h-3" />}
                   {item.name.toUpperCase()}
                 </a>
               </Link>
@@ -112,7 +114,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-2 text-sm text-gray-300">
                 <li><Link href="/"><a className="hover:text-white transition-colors">Inicio</a></Link></li>
                 <li><Link href="/incorporacion"><a className="hover:text-white transition-colors">Incorporación</a></Link></li>
-                <li><a href="#" className="hover:text-white transition-colors">Dependencias</a></li>
+                <li><Link href="/seguimiento"><a className="hover:text-white transition-colors">Estado de Trámite</a></Link></li>
                 <li><a href="#" className="hover:text-white transition-colors">Denuncias</a></li>
               </ul>
             </div>

@@ -1,0 +1,20 @@
+Perfecto pero en la parte del formulario recordemos que esta es la Policia Federal Argentina de F&L Studios (Ficticia) y es para un juego por ende en el formulario debe estar adaptado para tal y los datos que debe solicitar son:
+
+Nombre/s del Personaje
+Apellido/s del Personaje
+Tipo de Identificacion (DNI, Cedula de Identidad, Visa, Pasaporte, Orden Legitima)
+N° de Identificacion (Se adapta dependiendo de la identificacion que seleccione)
+Fecha de Nacimiento del Personaje (Si es menor de 17 no lo deja continuar, debe ser mayor de 17 al 31 de diciembre del año cursante)
+Genero del Personaje (Masculino, Femenino o No Binario)
+Estado Civil del Personaje (Soltero, Casado, Divorciado, Separado, Viudo, Juntado)
+Nacionalidad (Argentina en particular en el listado que sea notable y sino otra lista de Argentina por Opcion o Argentina Naturalizado)
+Lugar de Nacimiento (Si es Argentina en la nacionalidad aqui le saldran las provincias de Argentina, si es cualquiera de las otras opciones en nacionalidad le saldran todos los paises del mundo en orden)
+La parte de datos de contacto:
+Correo Electronico (Debe aclararse que debe ser real ya que podriamos comunicarnos por alli)
+Usuario Discord
+Usuario Roblox
+Luego la parte de Educacion y Antecedentes:
+Maximo Nivel Alcanzado (Secundario, Terciario Universitario, Posgrado/Maestria)
+Titulo Obtenido
+¿Posee antecedentes penales? (Menu para seleccionar si o no, si selecciona No no pasa nada, y si selecciona Si, le sale una nueva opcion "Competencia" y le dara para elegir si Provincial, Federal o Ambos" y luego otra opcion "Describa sus antecedentes y fechas" y deben completar escribiendo y luego otra opcion para seleccionar "¿Causas activas?" Si o No o Desconoce..)
+Y al final la opcion para declarar bajo declaracion "Declaro bajo juramento que los datos consignados en el presente formulario son veraces y exactos, conociendo las penalidades previstas en el Código Penal para el falso testimonio y la falsificación de documentos en Capital Federal | Roblox Game."
