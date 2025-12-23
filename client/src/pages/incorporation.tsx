@@ -141,8 +141,12 @@ export default function Incorporation() {
       trackingCode: code,
       hasCriminalRecord: formData.hasCriminalRecord === "yes",
       medicalDeclaration: `Tipo de sangre: ${formData.bloodType}, Altura: ${formData.height}, Peso: ${formData.weight}, Condiciones de salud: ${formData.healthConditions || "Ninguna reportada"}`,
-      oathDeclaration: formData.oathDeclaration === true,
-      formalLetterAccepted: data.formalLetterAccepted,
+      oathDeclaration: Boolean(formData.oathDeclaration),
+      formalLetterAccepted: Boolean(data.formalLetterAccepted),
+      bloodType: formData.bloodType || "",
+      height: formData.height || "",
+      weight: formData.weight || "",
+      healthConditions: formData.healthConditions || "",
     };
     
     try {

@@ -1,0 +1,329 @@
+================================================================================
+GUÍA COMPLETA DE DESPLIEGUE EN cPANEL
+Portal Institucional - Policía Federal Argentina | Capital Federal
+================================================================================
+
+TABLA DE CONTENIDOS:
+1. Requisitos previos
+2. Preparación del proyecto
+3. Configuración en cPANEL
+4. Instalación de dependencias
+5. Configuración de base de datos
+6. Variables de entorno
+7. Despliegue final
+8. Verificación y troubleshooting
+
+================================================================================
+1. REQUISITOS PREVIOS
+================================================================================
+
+- Acceso a cPANEL con privilegios de administrador
+- Node.js 18+ instalado en el servidor (generalmente disponible en cPANEL)
+- npm 9+ instalado
+- PostgreSQL 12+ disponible en el servidor
+- Acceso SSH al servidor (recomendado)
+- Dominio asignado al hosting
+
+================================================================================
+2. PREPARACIÓN DEL PROYECTO
+================================================================================
+
+PASO 2.1: Compilar el proyecto localmente
+- Ejecutar: npm run build
+- Verifica que se creen correctamente las carpetas dist/ y dist/public
+
+PASO 2.2: Crear archivo .production.env
+En la raíz del proyecto, crear el archivo .production.env con:
+
+DATABASE_URL=postgresql://[usuario]:[contraseña]@[host]:[puerto]/[nombre_bd]
+NODE_ENV=production
+
+(Reemplazar valores con los de tu servidor PostgreSQL)
+
+PASO 2.3: Verificar estructura de carpetas
+El proyecto debe tener esta estructura:
+/proyecto-root/
+  ├── client/
+  ├── server/
+  ├── shared/
+  ├── dist/           (generado por npm run build)
+  ├── package.json
+  ├── tsconfig.json
+  ├── drizzle.config.ts
+  ├── vite.config.ts
+  └── .production.env
+
+================================================================================
+3. CONFIGURACIÓN EN cPANEL
+================================================================================
+
+PASO 3.1: Crear directorio de aplicación
+1. Ingresar a cPANEL
+2. Ir a "Gestor de Archivos" o "File Manager"
+3. Crear carpeta nueva: /public_html/pfa-portal (o tu nombre preferido)
+
+PASO 3.2: Subir archivos del proyecto
+1. Descargar como ZIP el contenido del proyecto
+2. Subir el archivo ZIP a /public_html/pfa-portal
+3. Extraer el ZIP en cPANEL
+
+O (si tienes acceso SSH):
+scp -r /ruta/local/proyecto usuario@servidor.com:/public_html/pfa-portal
+
+PASO 3.3: Configurar Node.js en cPANEL
+1. En cPANEL, ir a "Setup Node.js App" o "Node.js Manager"
+2. Hacer clic en "Create Application"
+3. Seleccionar la carpeta /pfa-portal
+4. Seleccionar Node.js version (18.x o superior)
+5. Configurar el puerto (ejemplo: 3000)
+6. Punto de entrada: dist/index.cjs
+7. Guardar
+
+PASO 3.4: Crear archivo .htaccess en public_html
+Si quieres acceder por dominio.com (sin subcarpeta), crear:
+/public_html/.htaccess
+
+Con contenido:
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^pfa-portal(.*)$ http://localhost:3000$1 [P,L]
+  RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+</IfModule>
+
+O usar reverse proxy en cPANEL si está disponible.
+
+================================================================================
+4. INSTALACIÓN DE DEPENDENCIAS
+================================================================================
+
+PASO 4.1: Instalar dependencias del proyecto
+Acceder por SSH o usar Terminal en cPANEL:
+
+cd /home/usuario/public_html/pfa-portal
+npm install --production
+
+Esperar a que terminen de instalar todas las dependencias.
+
+PASO 4.2: Compilar tipos de TypeScript (opcional pero recomendado)
+npm run build:server
+
+================================================================================
+5. CONFIGURACIÓN DE BASE DE DATOS
+================================================================================
+
+PASO 5.1: Crear base de datos PostgreSQL
+1. En cPANEL, ir a "PostgreSQL Databases"
+2. Crear una nueva base de datos
+3. Anotar:
+   - Nombre de la BD
+   - Usuario (crear uno nuevo)
+   - Contraseña
+   - Host (localhost o IP del servidor)
+   - Puerto (usualmente 5432)
+
+PASO 5.2: Actualizar .production.env
+Actualizar el archivo con los datos de la BD:
+DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/nombre_bd
+
+PASO 5.3: Ejecutar migraciones de base de datos
+En SSH/Terminal:
+
+cd /home/usuario/public_html/pfa-portal
+npm run db:push -- --production
+
+Esto creará todas las tablas necesarias:
+- users (administradores)
+- incorporation_requests (solicitudes de incorporación)
+- crime_reports (denuncias)
+- bulletins (boletines/noticias)
+
+PASO 5.4: Crear usuario administrador inicial (IMPORTANTE)
+Si las migraciones no crean usuarios automáticos, acceder a la BD y ejecutar:
+
+INSERT INTO users (id, username, password, role, department, email, full_name, badge)
+VALUES (
+  gen_random_uuid(),
+  'admin',
+  'admin123',
+  'Jefe de Policía',
+  'Jefatura',
+  'admin@pfa.gov.ar',
+  'Jefe de Policía',
+  'JEFE-001'
+);
+
+Cambiar contraseña después del primer login.
+
+================================================================================
+6. VARIABLES DE ENTORNO
+================================================================================
+
+Crear archivo /pfa-portal/.env.production con:
+
+# Base de datos
+DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/pfa_portal
+
+# Entorno
+NODE_ENV=production
+
+# Servidor
+PORT=3000
+HOST=0.0.0.0
+
+# Aplicación
+VITE_API_URL=https://tudominio.com
+
+Si usas variables en cPANEL:
+1. En "Setup Node.js App", hacer clic en "Edit"
+2. En "Environment Variables", agregar cada variable
+3. Guardar
+
+================================================================================
+7. DESPLIEGUE FINAL
+================================================================================
+
+PASO 7.1: Iniciar la aplicación
+Opción A - Desde cPANEL:
+1. Ir a "Setup Node.js App"
+2. Seleccionar la aplicación
+3. Hacer clic en "Start"
+
+Opción B - Desde SSH:
+cd /home/usuario/public_html/pfa-portal
+npm start
+# O
+node dist/index.cjs
+
+PASO 7.2: Configurar reverse proxy
+Si cPANEL lo permite:
+1. Ir a "Reverse Proxy"
+2. Crear proxy de /pfa-portal a http://localhost:3000
+
+O usar .htaccess con mod_proxy
+
+PASO 7.3: Configurar SSL/HTTPS
+1. En cPANEL, ir a "AutoSSL" o "SSL/TLS"
+2. Instalar certificado para tu dominio
+3. Forzar HTTPS en .htaccess
+
+PASO 7.4: Configurar dominio
+1. En "Addon Domains" o "Parked Domains"
+2. Asignar dominio a la carpeta /pfa-portal
+
+================================================================================
+8. VERIFICACIÓN Y TROUBLESHOOTING
+================================================================================
+
+VERIFICACIÓN INICIAL:
+✓ La aplicación inicia sin errores (revisar logs en cPANEL)
+✓ La BD se conecta correctamente (probar desde la app)
+✓ El login funciona con admin/admin123
+✓ Puedo acceder a todas las páginas
+
+SOLUCIÓN DE PROBLEMAS:
+
+Error: "Cannot find module 'express'"
+→ Ejecutar: npm install --production
+→ Revisar que node_modules esté en la carpeta correcta
+
+Error: "ECONNREFUSED" a base de datos
+→ Verificar DATABASE_URL en .env.production
+→ Verificar que PostgreSQL esté ejecutándose
+→ Revisar credenciales de la BD
+
+Error: "ENOENT: no such file or directory"
+→ Revisar que dist/ exista
+→ Ejecutar: npm run build
+→ Compilar con: npm run build:server
+
+Error 502 Bad Gateway
+→ Revisar logs de cPANEL
+→ Verificar que el puerto está disponible
+→ Reiniciar la aplicación Node.js
+
+REVISAR LOGS:
+- En cPANEL: "Configure Node.js App" → "Show Log"
+- O acceder a: /home/usuario/public_html/pfa-portal/logs/
+
+================================================================================
+9. MONITOREO EN PRODUCCIÓN
+================================================================================
+
+PASO 9.1: Configurar reinicio automático
+En cPANEL "Setup Node.js App":
+- Marcar "Restart on Crash" si está disponible
+
+PASO 9.2: Configurar backup automático
+1. Usar "Automated Backups" en cPANEL
+2. Establecer frecuencia diaria
+3. Incluir base de datos PostgreSQL
+
+PASO 9.3: Monitorear rendimiento
+1. Revisar uso de CPU y memoria en cPANEL
+2. Crear usuario especial para logs
+3. Configurar alertas de error
+
+================================================================================
+10. ACTUALIZACIÓN Y MANTENIMIENTO
+================================================================================
+
+ACTUALIZAR LA APLICACIÓN:
+1. Descargar nueva versión del proyecto
+2. Compilar: npm run build
+3. Subir archivos a /public_html/pfa-portal
+4. Reiniciar en cPANEL: "Setup Node.js App" → "Restart"
+
+RESPALDAR DATOS:
+1. Exportar BD: pg_dump nombre_bd > backup.sql
+2. Descargar carpeta /public_html/pfa-portal
+3. Guardar en lugar seguro
+
+ACCESO AL ADMIN:
+- URL: https://tudominio.com/admin
+- Usuario: admin
+- Contraseña: admin123 (CAMBIAR DESPUÉS DEL LOGIN)
+
+================================================================================
+SOPORTE Y CONTACTO
+================================================================================
+
+En caso de problemas:
+1. Revisar logs en cPANEL
+2. Verificar DATABASE_URL
+3. Asegurar que Node.js esté ejecutándose
+4. Verificar permisos de carpeta (755 para directorios, 644 para archivos)
+
+Permisos correctos en SSH:
+chmod -R 755 /home/usuario/public_html/pfa-portal
+chmod -R 644 /home/usuario/public_html/pfa-portal/client
+chmod -R 644 /home/usuario/public_html/pfa-portal/shared
+
+================================================================================
+NOTAS IMPORTANTES
+================================================================================
+
+1. NUNCA usar usuario "admin" con contraseña "admin123" en producción
+   → Cambiar inmediatamente después del primer login
+
+2. La aplicación usa PostgreSQL, NO SQLite
+   → Asegurar que PostgreSQL esté disponible en el hosting
+
+3. Las fotos y archivos se guardan en base de datos (base64)
+   → No hay carpeta de uploads que sincronizar
+
+4. Cambiar variables de entorno según tu servidor:
+   - DATABASE_URL
+   - NODE_ENV
+   - PORT (si es diferente)
+
+5. Revisar requerimientos de cPANEL:
+   - Node.js 18+ disponible
+   - PostgreSQL habilitado
+   - Acceso a puertos dinámicos
+
+================================================================================
+VERSIÓN: 1.0
+FECHA: 23 de Diciembre de 2025
+PROYECTO: Portal Institucional - Policía Federal Argentina
+================================================================================
