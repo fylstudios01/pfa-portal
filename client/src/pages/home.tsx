@@ -58,9 +58,11 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 hover:text-white px-8 py-6 text-lg">
-                CONOCER MÁS
-              </Button>
+              <Link href="/quienes-somos">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 hover:text-white px-8 py-6 text-lg">
+                  CONOCER MÁS
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -144,13 +146,15 @@ export default function Home() {
                 <Siren className="h-10 w-10 text-red-600" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-primary mb-1">Denuncias Anónimas</h3>
-                <p className="text-gray-600">Reportá actividades sospechosas de forma segura.</p>
+                <h3 className="text-xl font-bold text-primary mb-1">Denuncias Federales</h3>
+                <p className="text-gray-600">Reportá delitos federales de forma segura y conforme a la ley.</p>
               </div>
             </div>
-            <Button variant="outline" size="lg" className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 font-medium">
-              Realizar Denuncia
-            </Button>
+            <Link href="/denuncias">
+              <Button variant="outline" size="lg" className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 font-medium">
+                Realizar Denuncia
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

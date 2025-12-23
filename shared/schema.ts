@@ -3,16 +3,44 @@ import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Admin Users Table
+// Roles y jerarquías de la PFA
+export const ROLES = {
+  JEFE_POLICIA: "Jefe de Policía",
+  SUBCOMISARIO: "Subcomisario",
+  COMISARIO: "Comisario",
+  INSPECTOR: "Inspector",
+  SUBINSPECTOR: "Subinspector",
+  OFICIAL: "Oficial",
+  AGENTE: "Agente"
+} as const;
+
+export const DEPARTAMENTOS = {
+  INCORPORACIONES: "Incorporaciones",
+  RECURSOS_HUMANOS: "Recursos Humanos",
+  JEFATURA: "Jefatura",
+  DENUNCIAS: "Denuncias",
+  FEDERAL_911: "911 Federal",
+  COMUNICADOS: "Comunicados"
+} as const;
+
+// Admin Users Table with roles
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").notNull().default(ROLES.AGENTE),
+  department: text("department").notNull().default(DEPARTAMENTOS.INCORPORACIONES),
+  email: text("email"),
+  fullName: text("full_name"),
+  badge: text("badge"), // Número de placa/legajo
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  role: true,
+  department: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -74,3 +102,74 @@ export const insertIncorporationRequestSchema = createInsertSchema(incorporation
 
 export type IncorporationRequest = typeof incorporationRequests.$inferSelect;
 export type InsertIncorporationRequest = z.infer<typeof insertIncorporationRequestSchema>;
+
+// Crime Reports Table (Denuncias)
+export const crimeReports = pgTable("crime_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reportCode: text("report_code").notNull().unique(), // DEN-####
+  status: text("status").notNull().default("Registrada"),
+  crimeType: text("crime_type").notNull(), // Tipo de delito federal
+  description: text("description").notNull(),
+  location: text("location").notNull(),
+  dateOfCrime: timestamp("date_of_crime").notNull(),
+  reporter: text("reporter").notNull(),
+  reporterContact: text("reporter_contact"),
+  evidence: text("evidence"), // Descripción de evidencia
+  assignedOfficer: varchar("assigned_officer"), // FK a users.id
+  priority: text("priority").default("Normal"), // Baja, Normal, Alta, Crítica
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertCrimeReportSchema = createInsertSchema(crimeReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type CrimeReport = typeof crimeReports.$inferSelect;
+export type InsertCrimeReport = z.infer<typeof insertCrimeReportSchema>;
+
+// Bulletins/News (Boletín)
+export const bulletins = pgTable("bulletins", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(), // Comunicado, Noticia, Alerta, etc.
+  author: varchar("author").notNull(), // FK a users.id
+  published: boolean("published").notNull().default(false),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertBulletinSchema = createInsertSchema(bulletins).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Bulletin = typeof bulletins.$inferSelect;
+export type InsertBulletin = z.infer<typeof insertBulletinSchema>;
+
+// Personnel Files (Legajos - for approved incorporations)
+export const personnelFiles = pgTable("personnel_files", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  incorporationRequestId: varchar("incorporation_request_id").notNull(),
+  badge: text("badge").notNull().unique(), // Número de legajo/placa
+  role: text("role").notNull().default(ROLES.AGENTE),
+  status: text("status").notNull().default("Activo"), // Activo, Licencia, Suspendido, Retirado
+  hireDate: timestamp("hire_date").notNull().defaultNow(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertPersonnelFileSchema = createInsertSchema(personnelFiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type PersonnelFile = typeof personnelFiles.$inferSelect;
+export type InsertPersonnelFile = z.infer<typeof insertPersonnelFileSchema>;
