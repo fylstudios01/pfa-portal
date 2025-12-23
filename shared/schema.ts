@@ -86,8 +86,17 @@ export const incorporationRequests = pgTable("incorporation_requests", {
   
   // Photo & Declarations
   photo: text("photo").notNull(),
-  medicalDeclaration: boolean("medical_declaration").notNull(),
   oathDeclaration: boolean("oath_declaration").notNull(),
+  
+  // Medical Data (Etapa 5)
+  bloodType: text("blood_type"),
+  height: text("height"),
+  weight: text("weight"),
+  healthConditions: text("health_conditions"),
+  medicalDeclaration: text("medical_declaration"),
+  
+  // Final Letter
+  formalLetterAccepted: boolean("formal_letter_accepted").default(false),
   
   // Metadata
   createdAt: timestamp("created_at").notNull().defaultNow(),
